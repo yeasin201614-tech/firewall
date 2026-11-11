@@ -48,6 +48,10 @@ fun HomeDashboardScreen(
 
     val scrollState = rememberScrollState()
 
+    LaunchedEffect(Unit) {
+        repository.syncWithCloud()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

@@ -88,6 +88,7 @@ fun FirewallNavGraph(
             // 4. Login
             composable(Screen.Login.route) {
                 LoginScreen(
+                    repository = repository,
                     onLoginSuccess = { requiresMfa ->
                         if (requiresMfa) {
                             navController.navigate(Screen.MfaVerification.route)
@@ -105,6 +106,7 @@ fun FirewallNavGraph(
             // 5. Registration
             composable(Screen.Registration.route) {
                 RegistrationScreen(
+                    repository = repository,
                     onRegisterSuccess = {
                         navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Registration.route) { inclusive = true }

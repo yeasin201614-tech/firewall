@@ -219,6 +219,10 @@ fun SecurityAlertsScreen(
     val alerts by repository.alerts.collectAsState()
     var selectedFilter by remember { mutableStateOf("ALL") }
 
+    LaunchedEffect(Unit) {
+        repository.syncWithCloud()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

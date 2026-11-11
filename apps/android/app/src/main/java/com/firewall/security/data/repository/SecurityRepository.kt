@@ -1,11 +1,18 @@
 package com.firewall.security.data.repository
 
 import com.firewall.security.data.model.*
+import com.firewall.security.data.supabase.SupabaseClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class SecurityRepository {
+
+    val supabase = SupabaseClient()
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     private val _userProfile = MutableStateFlow(
         UserProfile(
@@ -246,6 +253,54 @@ class SecurityRepository {
     fun resolveAlert(id: String) {
         _alerts.value = _alerts.value.map {
             if (it.id == id) it.copy(resolved = true) else it
+        }
+        scope.launch {
+            supabase.resolveAlert(id)
+        }
+    }
+
+    fun syncWithCloud() {
+        scope.launch {
+            val cloudAlerts = supabase.fetchAlerts()
+            if (cloudAlerts.isNotEmpty()) {
+                _alerts.value = cloudAlerts
+            }
+        }
+    }
+
+    suspend fun loginWithCloud(email: String, password: String): Boolean {
+        val result = supabase.login(email, password)
+        return if (result.isSuccess) {
+            result.getOrNull()?.let { _userProfile.value = it }
+            syncWithCloud()
+            supabase.registerDevice()
+            true
+        } else {
+            false
+        }
+    }
+
+    suspend fun registerWithCloud(email: String, password: String, fullName: String): Boolean {
+        val result = supabase.register(email, password, fullName)
+        return if (result.isSuccess) {
+            result.getOrNull()?.let { _userProfile.value = it }
+            syncWithCloud()
+            supabase.registerDevice()
+            true
+        } else {
+            false
+        }
+    }
+
+    fun triggerScanAndReport(moduleName: String) {
+        scope.launch {
+            supabase.createAlert(
+                title = "Mobile Audit: $moduleName",
+                description = "Hardware biometric & Wi-Fi scan completed successfully from Android endpoint.",
+                severity = "INFO",
+                module = moduleName
+            )
+            syncWithCloud()
         }
     }
 

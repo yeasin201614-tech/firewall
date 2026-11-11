@@ -22,10 +22,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.firewall.security.R
+import com.firewall.security.data.repository.SecurityRepository
 import com.firewall.security.presentation.components.CyberButton
 import com.firewall.security.presentation.components.CyberCard
 import com.firewall.security.theme.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SplashScreen(onTimeout: () -> Unit) {
@@ -198,10 +200,12 @@ fun WelcomeScreen(
 
 @Composable
 fun LoginScreen(
+    repository: SecurityRepository? = null,
     onLoginSuccess: (requiresMfa: Boolean) -> Unit,
     onNavigateRegister: () -> Unit,
     onForgotPassword: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
     var email by remember { mutableStateOf("yeasin@example.com") }
     var password by remember { mutableStateOf("Firewall@2026!") }
     var isLoading by remember { mutableStateOf(false) }
@@ -282,10 +286,23 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             CyberButton(
-                text = if (isLoading) "Verifying..." else "Sign In",
+                text = if (isLoading) "Verifying Node..." else "Sign In",
                 onClick = {
                     isLoading = true
-                    onLoginSuccess(true) // trigger MFA
+                    coroutineScope.launch {
+                        if (repository != null) {
+                            val success = repository.loginWithCloud(email, password)
+                            isLoading = false
+                            if (success) {
+                                onLoginSuccess(false)
+                            } else {
+                                onLoginSuccess(true)
+                            }
+                        } else {
+                            isLoading = false
+                            onLoginSuccess(true)
+                        }
+                    }
                 }
             )
 
@@ -307,12 +324,15 @@ fun LoginScreen(
 
 @Composable
 fun RegistrationScreen(
+    repository: SecurityRepository? = null,
     onRegisterSuccess: () -> Unit,
     onNavigateLogin: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -389,8 +409,17 @@ fun RegistrationScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             CyberButton(
-                text = "Generate Keys & Register",
-                onClick = onRegisterSuccess
+                text = if (isLoading) "Enrolling Node..." else "Generate Keys & Register",
+                onClick = {
+                    isLoading = true
+                    coroutineScope.launch {
+                        if (repository != null) {
+                            repository.registerWithCloud(email, password, fullName)
+                        }
+                        isLoading = false
+                        onRegisterSuccess()
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(20.dp))
