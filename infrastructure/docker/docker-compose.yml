@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: firewall-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: firewall_secure_password
+      POSTGRES_DB: firewall_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - firewall-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: firewall-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - firewall-net
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.api
+    container_name: firewall-api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: "postgresql://postgres:firewall_secure_password@postgres:5432/firewall_db?schema=public"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: super_secret_firewall_jwt_encryption_key_change_in_production_min32chars
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - firewall-net
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.web
+    container_name: firewall-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: "http://localhost:4000"
+      NEXT_PUBLIC_WS_URL: "ws://localhost:4000"
+    depends_on:
+      - api
+    networks:
+      - firewall-net
+
+  admin:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.admin
+    container_name: firewall-admin
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: "http://localhost:4000"
+    depends_on:
+      - api
+    networks:
+      - firewall-net
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  firewall-net:
+    driver: bridge

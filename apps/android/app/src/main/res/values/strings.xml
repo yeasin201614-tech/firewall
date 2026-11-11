@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">FIREWALL</string>
+    <string name="tagline">Your Digital World, Protected.</string>
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="user_name">Yeasin Arafat</string>
+    <string name="user_role">Super User</string>
+    <string name="system_status_secure">All Systems Secure</string>
+</resources>

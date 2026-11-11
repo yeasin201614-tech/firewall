@@ -1,0 +1,34 @@
+{
+  "name": "firewall-ecosystem",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FIREWALL — 12-in-1 Enterprise Cybersecurity Ecosystem. Your Digital World, Protected.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm --workspace=apps/api run start:dev",
+    "dev:web": "npm --workspace=apps/web run dev",
+    "dev:admin": "npm --workspace=apps/admin run dev",
+    "build:packages": "npm --workspace=packages/shared-types run build && npm --workspace=packages/api-client run build && npm --workspace=packages/ui run build",
+    "build": "npm run build:packages && npm --workspace=apps/api run build && npm --workspace=apps/web run build && npm --workspace=apps/admin run build",
+    "test": "npm --workspace=apps/api run test && npm --workspace=apps/web run test",
+    "lint": "npm run -ws --if-present lint"
+  },
+  "keywords": [
+    "cybersecurity",
+    "firewall",
+    "zero-trust",
+    "soc",
+    "identity-guardian",
+    "phishing-shield",
+    "threat-intelligence",
+    "endpoint-security"
+  ],
+  "author": "FIREWALL Engineering Team",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.0"
+  }
+}

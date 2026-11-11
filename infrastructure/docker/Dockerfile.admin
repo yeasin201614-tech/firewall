@@ -1,0 +1,24 @@
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY package*.json ./
+COPY packages/ ./packages/
+COPY apps/admin/ ./apps/admin/
+
+RUN npm install
+RUN npm --workspace=packages/shared-types run build
+RUN npm --workspace=packages/ui run build
+RUN npm --workspace=apps/admin run build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3001
+
+COPY --from=builder /app/apps/admin/public ./apps/admin/public
+COPY --from=builder /app/apps/admin/.next ./apps/admin/.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/admin/package.json ./apps/admin/package.json
+
+EXPOSE 3001
+CMD ["npm", "--workspace=apps/admin", "run", "start"]

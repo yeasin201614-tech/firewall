@@ -1,0 +1,6 @@
+{
+  "name": "@firewall/config",
+  "version": "1.0.0",
+  "main": "tailwind.config.js",
+  "description": "Shared configurations for FIREWALL monorepo"
+}

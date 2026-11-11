@@ -1,0 +1,11 @@
+<resources>
+    <color name="cyber_dark">#050B1F</color>
+    <color name="cyber_darker">#02050E</color>
+    <color name="cyber_surface">#0A1330</color>
+    <color name="cyber_surface2">#101D42</color>
+    <color name="cyber_blue">#087BFF</color>
+    <color name="cyber_cyan">#00D9FF</color>
+    <color name="cyber_orange">#FF6A00</color>
+    <color name="cyber_green">#00D68F</color>
+    <color name="cyber_red">#FF4057</color>
+</resources>
