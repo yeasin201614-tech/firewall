@@ -18,14 +18,15 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    const cleanEmail = email.trim().toLowerCase();
 
     if (isSupabaseConfigured) {
       try {
-        const data = await signUpWithSupabase(email, password, fullName, 'USER');
+        const data = await signUpWithSupabase(cleanEmail, password, fullName.trim(), 'USER');
         const user = {
           id: data.user?.id || `usr-${Date.now()}`,
-          fullName,
-          email,
+          fullName: fullName.trim(),
+          email: cleanEmail,
           role: 'USER',
           securityScore: 98,
         };
